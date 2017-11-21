@@ -5,14 +5,12 @@
  */
 package ParseXsd;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-import com.sun.xml.xsom.XSComplexType;
-import com.sun.xml.xsom.XSContentType;
-import com.sun.xml.xsom.XSElementDecl;
-import com.sun.xml.xsom.XSParticle;
-import com.sun.xml.xsom.XSSchema;
-import java.util.HashMap;
-import java.util.Map;
+
 
 
 /**
@@ -20,56 +18,63 @@ import java.util.Map;
  * @author maschio
  */
 public class ParseXsd {
-    private XSSchema schema;
-    private HashMap <String ,String> jolieComplexType ; 
-    private Map<String, XSComplexType> complexTypes;
-    public ParseXsd(XSSchema schema){
-        this.schema = schema;
+    Document doc ;
+    public ParseXsd(Document doc){
+       
+        this.doc = doc;
         
-        jolieComplexType = new HashMap<>();
-    }
-    public void parse(){
-        complexTypes = schema.getComplexTypes();
-        for( Map.Entry<String, XSComplexType> entry : complexTypes.entrySet()){
-            String complexTypeString;
-            parseComplexType ((XSComplexType) entry.getValue());
-            
-        }
       
     }
-    private void parseComplexType (XSComplexType complexType ){
-        
-        try{
-                XSContentType contentType = complexType.getContentType();
-                String complexTypeString = "type " + complexType.getName() + ":{\n" ;
-                parseParticle(contentType.asParticle(),complexTypeString);
-                complexTypeString += "}\n";
-                System.out.println(complexTypeString);
-        }catch(InternalError e ){
-              System.err.println("Probably ref");
-        }
-        
-        
+    public void parse(){
+       NodeList nList = doc.getElementsByTagName("xs:complexType");
+       for (int temp = 0; temp < nList.getLength(); temp++) {
+                Node nNode = nList.item(temp);
+                
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                         Element eElement = (Element) nNode;
+                    System.out.println("type " + eElement.getAttribute("name") + ":void{\n");
+                }
+                NodeList childList =  nNode.getChildNodes();
+
+                for (int temp1 = 0; temp1 < childList.getLength(); temp1++) {
+                     if (childList.item(temp1).getNodeName() == "xs:sequence"){
+                         parseSequence(childList.item(temp1));
+                     }
+                       
+                }
        
+       }
+      
     }
-    
-    private void parseParticle (XSParticle particle , String typeString){
-       try {
-        if (particle.getTerm().isModelGroup()){
-            XSParticle[] childrens = particle.getTerm().asModelGroup().getChildren();
-            for (int counter = 0 ; counter < childrens.length; counter++){
-                parseParticle (childrens[counter] ,typeString);
-            } 
-        }
-        
-        if (particle.getTerm().isElementDecl()){
-              typeString +=  "\t." + particle.getTerm().asElementDecl().getName() + ":"  ; 
-            } 
+   private void parseSequence ( Node nNode){
+       NodeList childList =  nNode.getChildNodes();
+  
+       for (int temp1 = 0; temp1 < childList.getLength(); temp1++) {
+                  String minOccurs = "1";
+       String maxOccurs = "1";
+           if (childList.item(temp1).getNodeType() == Node.ELEMENT_NODE) {
+               
+               Element eElement = (Element) childList.item(temp1);
+               
+               if (eElement.getAttribute("minOccurs")!=""){
+                  minOccurs = eElement.getAttribute("minOccurs");
+               }
+               if (eElement.getAttribute("maxOccurs")!= ""){
+                if (eElement.getAttribute("maxOccurs")== "unbounded"){
+                     maxOccurs = "*";
+                }else{
+                     maxOccurs = eElement.getAttribute("maxOccurs");
+                }
+               }
+               if (eElement.getAttribute("name")!= ""){
+                System.out.println("." + eElement.getAttribute("name") +"["+ minOccurs+":"+maxOccurs+"]" +" : "+ eElement.getAttribute("type")+"\n");
+               }
+           }
+          
+       }
        
-        
-        }catch(InternalError e ){
-              System.err.println("Probably ref");
-            }
-    }
+       System.out.println("}\n");
+
+   }
     
 }

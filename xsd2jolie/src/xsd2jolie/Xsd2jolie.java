@@ -6,15 +6,20 @@
 package xsd2jolie;
 
 import ParseXsd.ParseXsd;
-import ParseXsd.XsdVisitor;
-import com.sun.xml.xsom.XSComplexType;
-import com.sun.xml.xsom.XSSchema;
-import com.sun.xml.xsom.parser.SchemaDocument;
-import com.sun.xml.xsom.parser.XSOMParser;
 import java.io.File;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+
 
 /**
  *
@@ -27,22 +32,21 @@ public class Xsd2jolie {
      */
     public static void main(String[] args) {
         try {
-        XSOMParser parser = new XSOMParser();
-        File file;
-        file = new File (".\\Fattura1.2.0.xsd");
-        parser.parse(file);
-        Set<SchemaDocument> documents = parser.getDocuments();
-        Iterator<SchemaDocument> iteratorDocuments = documents.iterator();
-        while (iteratorDocuments.hasNext()){
-            SchemaDocument document = iteratorDocuments.next();
-            XSSchema a = document.getSchema();
-            ParseXsd parseXsd =  new  ParseXsd(a);
+            File fXmlFile = new File("./Fattura1.2.0.xsd");
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(fXmlFile);
+            
+            ParseXsd parseXsd = new ParseXsd(doc);
             parseXsd.parse();
+             
+        } catch (ParserConfigurationException ex) {
+            Logger.getLogger(Xsd2jolie.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SAXException ex) {
+            Logger.getLogger(Xsd2jolie.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Xsd2jolie.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-    catch (Exception exp) {
-        exp.printStackTrace(System.out);
-    }
     }
     
 }
