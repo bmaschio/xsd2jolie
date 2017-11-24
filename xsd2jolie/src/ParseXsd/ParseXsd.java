@@ -5,6 +5,7 @@
  */
 package ParseXsd;
 
+import java.util.HashMap;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -18,6 +19,17 @@ import org.w3c.dom.NodeList;
  * @author maschio
  */
 public class ParseXsd {
+    public  static class  XsdType {
+        private HashMap <String ,String >xsdJolieType = new  HashMap<>();
+        public XsdType(){
+           xsdJolieType.put("xs:string","string");
+           xsdJolieType.put("xs:decimal","double");
+           xsdJolieType.put("xs:date","string");
+           xsdJolieType.put ("xs:integer","int");1
+        }
+        
+   }
+    
     Document doc ;
     public ParseXsd(Document doc){
        
@@ -26,9 +38,9 @@ public class ParseXsd {
       
     }
     public void parse(){
-       NodeList nList = doc.getElementsByTagName("xs:complexType");
-       for (int temp = 0; temp < nList.getLength(); temp++) {
-                Node nNode = nList.item(temp);
+       NodeList nListComplex = doc.getElementsByTagName("xs:complexType");
+       for (int counter = 0; counter < nListComplex.getLength(); counter++) {
+                Node nNode = nListComplex.item(counter);
                 
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                          Element eElement = (Element) nNode;
