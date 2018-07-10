@@ -31,6 +31,8 @@ public class ParseXsd {
            xsdJolieType.put ("xs:integer","int");
 		   xsdJolieType.put ("xs:date","string");
 		   xsdJolieType.put( "xs:base64Binary", "raw" );
+		   xsdJolieType.put( "xs:normalizedString","string");
+		   xsdJolieType.put ("xs:dateTime","string");
         }
 		
 		public static String getJolieType(String xsdType ){
@@ -40,6 +42,7 @@ public class ParseXsd {
    }
     
     Document doc ;
+	XsdType xsdType = new XsdType();
     public ParseXsd(Document doc){
        
         this.doc = doc;
@@ -53,14 +56,27 @@ public class ParseXsd {
 	   for (int counter = 0; counter < nListComplex.getLength(); counter++) {
 	             Node nNode = nListComplex.item(counter);
                 elementQueue.add( nNode );
-	   }
+	   };
+	   
+	   NodeList nListSimple = doc.getElementsByTagName("xs:simpleType");
+	   
+	   for (int counter = 0; counter < nListSimple.getLength(); counter++) {
+	             Node nNode = nListSimple.item(counter);
+                elementQueue.add( nNode );
+	   };
        while (elementQueue.size()> 0) {
                 Node nNode = elementQueue.poll();
 
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
 					
                     Element eElement = (Element) nNode;
-                    System.out.println("type " + eElement.getAttribute("name") + ":void{\n");
+					 NodeList nListRestriction =eElement.getElementsByTagName( "xs:restriction" );
+					 if (nListRestriction.getLength()>0){
+					  Element baseElement = (Element) nListRestriction.item( 0 ); 
+					  System.out.println("type " + eElement.getAttribute("name")+": "+ xsdType.getJolieType( baseElement.getAttribute("base")) +"\n");
+					 }else{
+					    System.out.println("type " + eElement.getAttribute("name") + ":void{\n");
+					 }
                 }
                 NodeList childList =  nNode.getChildNodes();
 
@@ -76,7 +92,7 @@ public class ParseXsd {
     }
    private void parseSequence ( Node nNode){
        NodeList childList =  nNode.getChildNodes();
-	   XsdType xsdType = new XsdType();
+	
   
        for (int temp1 = 0; temp1 < childList.getLength(); temp1++) {
                   String minOccurs = "1";
@@ -97,9 +113,9 @@ public class ParseXsd {
                }
                if (eElement.getAttribute("name")!= ""){
 				if (xsdType.getJolieType( eElement.getAttribute("type") )== null){   
-                System.out.println("." + eElement.getAttribute("name") +"["+ minOccurs+":"+maxOccurs+"]" +" : "+ eElement.getAttribute("type")+"\n");
+                System.out.println("." + eElement.getAttribute("name") +"["+ minOccurs+","+maxOccurs+"]" +" : "+ eElement.getAttribute("type")+"\n");
                }else{
-			    System.out.println("." + eElement.getAttribute("name") +"["+ minOccurs+":"+maxOccurs+"]" +" : "+ xsdType.getJolieType( eElement.getAttribute("type")) +"\n");
+			    System.out.println("." + eElement.getAttribute("name") +"["+ minOccurs+","+maxOccurs+"]" +" : "+ xsdType.getJolieType( eElement.getAttribute("type")) +"\n");
 			   }
 			  }
            }
