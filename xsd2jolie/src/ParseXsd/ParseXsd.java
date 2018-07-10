@@ -20,13 +20,19 @@ import org.w3c.dom.NodeList;
  */
 public class ParseXsd {
     public  static class  XsdType {
-        private HashMap <String ,String >xsdJolieType = new  HashMap<>();
-        public XsdType(){
+        private  static HashMap <String ,String >xsdJolieType = new  HashMap<>();
+        private XsdType(){
            xsdJolieType.put("xs:string","string");
            xsdJolieType.put("xs:decimal","double");
            xsdJolieType.put("xs:date","string");
-           xsdJolieType.put ("xs:integer","int");1
+           xsdJolieType.put ("xs:integer","int");
+		   xsdJolieType.put ("xs:date","string");
+		   xsdJolieType.put( "xs:base64Binary", "raw" );
         }
+		
+		public static String getJolieType(String xsdType ){
+		  return xsdJolieType.get( xsdType );
+		}
         
    }
     
@@ -60,6 +66,7 @@ public class ParseXsd {
     }
    private void parseSequence ( Node nNode){
        NodeList childList =  nNode.getChildNodes();
+	   XsdType xsdType = new XsdType();
   
        for (int temp1 = 0; temp1 < childList.getLength(); temp1++) {
                   String minOccurs = "1";
@@ -79,8 +86,12 @@ public class ParseXsd {
                 }
                }
                if (eElement.getAttribute("name")!= ""){
+				if (xsdType.getJolieType( eElement.getAttribute("type") )== null){   
                 System.out.println("." + eElement.getAttribute("name") +"["+ minOccurs+":"+maxOccurs+"]" +" : "+ eElement.getAttribute("type")+"\n");
-               }
+               }else{
+			    System.out.println("." + eElement.getAttribute("name") +"["+ minOccurs+":"+maxOccurs+"]" +" : "+ xsdType.getJolieType( eElement.getAttribute("type")) +"\n");
+			   }
+			  }
            }
           
        }
